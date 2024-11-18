@@ -1,5 +1,6 @@
 package Controller;
 
+import Model.Account;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
@@ -15,8 +16,29 @@ public class SocialMediaController {
      * @return a Javalin app object which defines the behavior of the Javalin controller.
      */
     public Javalin startAPI() {
-        Javalin app = Javalin.create();
+        Javalin app = Javalin.create().start(8080);
         app.get("example-endpoint", this::exampleHandler);
+        
+        //REGISTER:
+        app.post("/register", ctx -> {
+            Account newAccount = ctx.bodyAsClass(Account.class);
+            String username = newAccount.getUsername();
+            String password = newAccount.getPassword();
+            if(username == ""){
+                ctx.status(400);
+                ctx.result("Username is blank");
+                return;
+            }else if(password.length()<4){
+                ctx.status(400);
+                ctx.result("Password must be at least 4 characters long");
+                return;
+            }else{
+                ctx.status(200);
+                String jsonNewAccountString = "";
+                //TO DO: Use service to call DAO to create account and return it as jsonString..parse?
+                ctx.result(jsonNewAccountString);
+            }
+        });
 
         return app;
     }
