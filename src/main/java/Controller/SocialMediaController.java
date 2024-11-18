@@ -1,6 +1,16 @@
 package Controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import Model.Account;
+import Model.Message;
+import Service.SocialMediaBlogApiService;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
@@ -16,7 +26,9 @@ public class SocialMediaController {
      * @return a Javalin app object which defines the behavior of the Javalin controller.
      */
     public Javalin startAPI() {
-        Javalin app = Javalin.create().start(8080);
+        Javalin app = Javalin.create();//.start(8080);
+        ObjectMapper objectMapper = new ObjectMapper();
+
         app.get("example-endpoint", this::exampleHandler);
         
         //REGISTER:
@@ -26,7 +38,7 @@ public class SocialMediaController {
             String password = newAccount.getPassword();
             if(username == ""){
                 ctx.status(400);
-                ctx.result("Username is blank");
+                ctx.result("Username can not be blank");
                 return;
             }else if(password.length()<4){
                 ctx.status(400);
@@ -34,11 +46,63 @@ public class SocialMediaController {
                 return;
             }else{
                 ctx.status(200);
-                String jsonNewAccountString = "";
-                //TO DO: Use service to call DAO to create account and return it as jsonString..parse?
+                SocialMediaBlogApiService accountService = new SocialMediaBlogApiService();
+                String jsonNewAccountString = accountService.registerAccount(newAccount);
                 ctx.result(jsonNewAccountString);
             }
         });
+
+        //LOGIN:
+        app.post("/login", ctx -> {
+            Account newAccount = ctx.bodyAsClass(Account.class);
+            SocialMediaBlogApiService accountService = new SocialMediaBlogApiService();
+            String jsonAccountString = accountService.login(newAccount);
+            if(jsonAccountString==null){
+                ctx.status(401);
+                ctx.result("User does not exist.");
+                return;
+            }else{
+                ctx.status(200);
+                ctx.result(jsonAccountString);
+            }
+        });
+
+        //CREATE MESSAGE:
+        app.post("/messages", ctx -> {
+            Message message = ctx.bodyAsClass(Message.class);
+            String text = message.getMessage_text();
+            int postedByUserId = message.getPosted_by();
+            if(text == ""){
+                ctx.status(400);
+                ctx.result("Message can not be blank");
+                return;
+            }else if(text.length()>=255){
+                ctx.status(400);
+                ctx.result("Message length must be less than 255 charaters.");
+                return;
+            }else{
+                SocialMediaBlogApiService accountService = new SocialMediaBlogApiService();
+                String jsonAccountString = accountService.getAccountById(postedByUserId);
+                if(jsonAccountString == null){//ACCOUNT ID DOES NOT EXIST
+                    ctx.status(400);
+                    ctx.result("Account ID does not exist.");
+                    return;
+                }else{
+                    ctx.status(200);
+                    String jsonNewMessageString = accountService.createMessage(message);
+                    ctx.result(jsonNewMessageString);
+                }
+            }
+        });        
+
+
+        //GET ALL MESSAGES:
+        app.get("/messages", ctx -> {
+            SocialMediaBlogApiService accountService = new SocialMediaBlogApiService();
+            List<Message> messages = accountService.getAllMessages();
+            ctx.status(200);
+            ctx.json(messages);
+        });                
 
         return app;
     }
