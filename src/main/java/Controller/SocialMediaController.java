@@ -82,8 +82,8 @@ public class SocialMediaController {
                 return;
             }else{
                 SocialMediaBlogApiService accountService = new SocialMediaBlogApiService();
-                String jsonAccountString = accountService.getAccountById(postedByUserId);
-                if(jsonAccountString == null){//ACCOUNT ID DOES NOT EXIST
+                Account account = accountService.getAccountById(postedByUserId);
+                if(account == null){//ACCOUNT ID DOES NOT EXIST
                     ctx.status(400);
                     ctx.result("Account ID does not exist.");
                     return;
@@ -103,6 +103,17 @@ public class SocialMediaController {
             ctx.status(200);
             ctx.json(messages);
         });                
+
+        //GET A MESSAGE:
+        app.get("/messages:message_id}", ctx -> {
+            SocialMediaBlogApiService accountService = new SocialMediaBlogApiService();
+            String message_id_string = ctx.pathParam("message_id");
+            int message_id = Integer.parseInt(message_id_string);
+            Message message = accountService.getMessage(message_id);
+            ctx.status(200);
+            ctx.json(message);
+        });                
+
 
         return app;
     }

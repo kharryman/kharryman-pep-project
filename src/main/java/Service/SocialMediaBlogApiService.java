@@ -20,7 +20,7 @@ public class SocialMediaBlogApiService {
         return socialMediaDA0.login(account);
     }
 
-    public String getAccountById(int accountId){
+    public Account getAccountById(int accountId){
         return socialMediaDA0.getAccountById(accountId);
     }
 
@@ -30,5 +30,9 @@ public class SocialMediaBlogApiService {
 
     public List<Message> getAllMessages(){
         return socialMediaDA0.getAllMessages();
+    }
+
+    public Message getMessage(int message_id){
+        return socialMediaDA0.getMessageById(message_id);
     }
 }

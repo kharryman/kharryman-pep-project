@@ -6,8 +6,6 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.h2.util.json.JSONObject;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SocialMediaBlogApiDAO{
@@ -67,29 +65,21 @@ public class SocialMediaBlogApiDAO{
       return null;
    }
 
-   public String getAccountById(int accountId){    
+   public Account getAccountById(int accountId){    
       Connection connection = ConnectionUtil.getConnection();
+      Account foundAccount = null;
       try{
         String sql = "SELECT * FROM account WHERE account_id=?";
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setInt(1, accountId);
         ResultSet rs = preparedStatement.executeQuery();
-        Account foundAccount = null;
         if(rs.next()){
             foundAccount = new Account(rs.getInt("account_id"), rs.getString("username"), rs.getString("password"));
-            ObjectMapper objectMapper = new ObjectMapper();
-            String jsonFoundAccountString = null;
-            try{
-               jsonFoundAccountString = objectMapper.writeValueAsString(foundAccount);
-            }catch(Exception e){
-               System.out.println("Error getting jsonFoundAccountString JSON string: " + e.getMessage());
-            }
-            return jsonFoundAccountString;
         }
       }catch(SQLException e){
          System.out.println(e.getMessage());
       }
-      return null;
+      return foundAccount;
    }
 
    public String createMessage(Message message){    
@@ -137,5 +127,22 @@ public class SocialMediaBlogApiDAO{
       }
       return null;
    }
+
+   public Message getMessageById(int messageId){    
+      Connection connection = ConnectionUtil.getConnection();
+      Message foundMessage = null;
+      try{
+        String sql = "SELECT * FROM message WHERE message_id=?";
+        PreparedStatement preparedStatement = connection.prepareStatement(sql);
+        preparedStatement.setInt(1, messageId);
+        ResultSet rs = preparedStatement.executeQuery();
+        if(rs.next()){
+         foundMessage = new Message(rs.getInt("message_id"), rs.getInt("posted_by"), rs.getString("message_text"), rs.getLong("time_posted_epoch"));
+        }
+      }catch(SQLException e){
+         System.out.println(e.getMessage());
+      }
+      return foundMessage;
+   }   
 
 }
