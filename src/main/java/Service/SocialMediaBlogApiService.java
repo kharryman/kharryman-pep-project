@@ -12,11 +12,15 @@ public class SocialMediaBlogApiService {
         socialMediaDA0 = new SocialMediaBlogApiDAO();
     }
 
-    public String registerAccount(Account account){
+    public boolean isAccountUsernameExists(String username){
+      return socialMediaDA0.isAccountUsernameExists(username);
+    }
+
+    public Account registerAccount(Account account){
         return socialMediaDA0.registerAccount(account);
     }
 
-    public String login(Account account){
+    public Account login(Account account){
         return socialMediaDA0.login(account);
     }
 
@@ -32,7 +36,19 @@ public class SocialMediaBlogApiService {
         return socialMediaDA0.getAllMessages();
     }
 
-    public Message getMessage(int message_id){
+    public Message getMessageById(int message_id){
         return socialMediaDA0.getMessageById(message_id);
+    }
+
+    public Message deleteMessageById(int message_id){
+        return socialMediaDA0.deleteMessageById(message_id);
+    }
+
+    public Message updateMessageById(int message_id, Message updatedMessage){
+        return socialMediaDA0.updateMessageById(message_id, updatedMessage);
+    }
+
+    public List<Message> getMessagesByAccountId(int account_id){
+        return socialMediaDA0.getMessagesByAccountId(account_id);
     }
 }
