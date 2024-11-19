@@ -28,6 +28,22 @@ public class SocialMediaBlogApiDAO {
       return false;
    }
 
+   public boolean isMessageByIdExists(int message_id) {
+      Connection connection = ConnectionUtil.getConnection();
+      try {
+         String sql = "SELECT * FROM message WHERE message_id=?";
+         PreparedStatement preparedStatement = connection.prepareStatement(sql);
+         preparedStatement.setInt(1, message_id);
+         ResultSet rs = preparedStatement.executeQuery();
+         if (rs.next()) {
+            return true;
+         }
+      } catch (SQLException e) {
+         System.out.println("isMessageByIdExists: " + e.getMessage());
+      }
+      return false;
+   }
+
    public Account registerAccount(Account account) {
       Connection connection = ConnectionUtil.getConnection();
       // Account account = new Account(passedAccount.getFirst("username").toString(),
@@ -174,17 +190,20 @@ public class SocialMediaBlogApiDAO {
    }
 
    public Message updateMessageById(int messageId, Message updatedMessage) {
+      System.out.println("updateMessageById updatedMessage = " + updatedMessage);
       Connection connection = ConnectionUtil.getConnection();
       Message foundMessage = getMessageById(messageId);
       Message newUpdatedMessage = null;
       if (foundMessage != null) {
-         newUpdatedMessage = new Message(messageId, updatedMessage.getPosted_by(), updatedMessage.getMessage_text(),
-               updatedMessage.getTime_posted_epoch());
+         newUpdatedMessage = new Message(messageId, foundMessage.getPosted_by(), updatedMessage.getMessage_text(),
+         foundMessage.getTime_posted_epoch());
          try {
-            String sql = "UPDATE message SET message_text=? WHERE message_id=?";
+            String sql = "UPDATE message SET posted_by=?, message_text=?, time_posted_epoch=? WHERE message_id=?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, updatedMessage.getMessage_text());
-            preparedStatement.setInt(2, messageId);
+            preparedStatement.setInt(1, newUpdatedMessage.getPosted_by());
+            preparedStatement.setString(2, newUpdatedMessage.getMessage_text());
+            preparedStatement.setLong(3, newUpdatedMessage.getTime_posted_epoch());
+            preparedStatement.setInt(4, messageId);
             int numRows = preparedStatement.executeUpdate();
             System.out.println("updatedMessageById numRows updated = " + numRows);
          } catch (SQLException e) {
